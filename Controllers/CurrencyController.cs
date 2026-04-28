@@ -16,8 +16,6 @@ namespace CurrencyConverterAPI.Controllers
             _httpClient = factory.CreateClient();
         }
 
-        // Convert currency
-        // GET: api/currency/convert?from=USD&to=PHP&amount=10
         [HttpGet("convert")]
         public async Task<IActionResult> Convert(string from, string to, decimal amount)
         {
@@ -52,8 +50,6 @@ namespace CurrencyConverterAPI.Controllers
             }
         }
 
-        // Get all rates
-        // GET: api/currency/rates?from=USD
         [HttpGet("rates")]
         public async Task<IActionResult> GetRates(string from)
         {
@@ -78,8 +74,6 @@ namespace CurrencyConverterAPI.Controllers
             }
         }
 
-        // Get supported currencies
-        // GET: api/currency/currencies
         [HttpGet("currencies")]
         public async Task<IActionResult> GetCurrencies()
         {

@@ -4,13 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Currency Converter</title>
-    <link rel="stylesheet" href="/style.css?v=20260428-red-mobile">
+    <link rel="stylesheet" href="/style.css?v=20260428-blue-motion">
 </head>
 <body>
 
 <div class="page-backdrop">
     <div class="glow glow-one"></div>
     <div class="glow glow-two"></div>
+    <div class="motion-layer" aria-hidden="true">
+        <span class="ribbon ribbon-one"></span>
+        <span class="ribbon ribbon-two"></span>
+        <span class="float-token token-one"></span>
+        <span class="float-token token-two"></span>
+        <span class="float-token token-three"></span>
+        <span class="spark spark-one"></span>
+        <span class="spark spark-two"></span>
+        <span class="spark spark-three"></span>
+    </div>
 
     <div class="container">
         <div class="card">
@@ -28,7 +38,15 @@
                     <select id="from"></select>
                 </div>
 
-                <div class="swap" aria-hidden="true">&#8646;</div>
+                <button
+                    type="button"
+                    class="swap"
+                    onclick="convert()"
+                    aria-label="Convert currency"
+                    title="Convert currency"
+                >
+                    &#8646;
+                </button>
 
                 <div class="select-card">
                     <label for="to">To</label>
@@ -45,7 +63,7 @@
         </div>
     </div>
 
-    <footer class="page-footer">Built by Manlangit - Cañete - Tompong</footer>
+    <footer class="page-footer">Built by Manlangit - Ca&ntilde;ete - Tompong</footer>
 </div>
 
 <script>
