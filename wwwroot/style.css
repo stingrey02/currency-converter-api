@@ -173,7 +173,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 470px;
+    max-width: 760px;
     position: relative;
     z-index: 1;
 }
@@ -194,7 +194,7 @@ body {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.95));
     border: 1px solid rgba(255, 255, 255, 0.92);
     border-radius: 30px;
-    padding: clamp(18px, 5vw, 34px) clamp(16px, 5vw, 28px) clamp(18px, 4vw, 26px);
+    padding: clamp(20px, 4vw, 36px) clamp(18px, 4vw, 34px) clamp(20px, 4vw, 30px);
     box-shadow: var(--shadow);
     backdrop-filter: blur(12px);
     animation: rise 0.8s ease-out;
@@ -218,7 +218,7 @@ body {
 .card h1 {
     font-size: clamp(2rem, 4vw, 2.6rem);
     line-height: 1.05;
-    margin-bottom: clamp(18px, 4vw, 24px);
+    margin-bottom: clamp(20px, 4vw, 28px);
     color: var(--navy-900);
 }
 
@@ -255,6 +255,17 @@ select {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
 }
 
+.native-select {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
 input::placeholder {
     color: #94a9c7;
 }
@@ -270,21 +281,153 @@ select:focus {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: end;
-    gap: clamp(8px, 2vw, 14px);
+    gap: clamp(12px, 2.2vw, 18px);
     margin-bottom: clamp(18px, 4vw, 24px);
 }
 
 .select-card {
     min-width: 0;
+    position: relative;
     padding: clamp(10px, 2.6vw, 14px);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(237, 245, 255, 0.74));
     border: 1px solid rgba(35, 74, 132, 0.09);
     border-radius: 20px;
 }
 
+.custom-select {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select-trigger {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid rgba(35, 74, 132, 0.18);
+    border-radius: 16px;
+    background: var(--panel);
+    color: var(--ink);
+    font-size: clamp(14px, 2.6vw, 15px);
+    padding: clamp(12px, 2.8vw, 14px) clamp(12px, 3vw, 16px);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
+}
+
+.custom-select-trigger:hover,
+.custom-select.is-open .custom-select-trigger {
+    border-color: var(--sky-500);
+    box-shadow: 0 0 0 4px rgba(95, 169, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+.custom-select-trigger:focus-visible {
+    outline: none;
+    border-color: var(--sky-500);
+    box-shadow: 0 0 0 4px rgba(95, 169, 255, 0.18);
+    transform: translateY(-1px);
+}
+
+.custom-select-value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.custom-select-icon {
+    flex: 0 0 auto;
+    width: 10px;
+    height: 10px;
+    position: relative;
+}
+
+.custom-select-icon::before {
+    content: "";
+    position: absolute;
+    inset: 1px 0 0;
+    border-right: 2px solid rgba(23, 57, 109, 0.72);
+    border-bottom: 2px solid rgba(23, 57, 109, 0.72);
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+}
+
+.custom-select.is-open .custom-select-icon::before {
+    transform: rotate(225deg);
+    top: 3px;
+}
+
+.custom-select-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: max-content;
+    min-width: max(100%, 320px);
+    max-width: min(520px, calc(100vw - 32px));
+    z-index: 4;
+    display: grid;
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid rgba(35, 74, 132, 0.14);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 24px 40px rgba(23, 57, 109, 0.16);
+    backdrop-filter: blur(12px);
+    max-height: min(280px, 42vh);
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.select-card:last-child .custom-select-menu {
+    left: auto;
+    right: 0;
+}
+
+.custom-select.is-open .custom-select-menu {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.custom-select-option {
+    width: 100%;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--ink);
+    font-size: clamp(14px, 2.6vw, 15px);
+    line-height: 1.35;
+    padding: 12px 14px;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.custom-select-option:hover,
+.custom-select-option:focus-visible {
+    outline: none;
+    background: rgba(95, 169, 255, 0.12);
+    color: var(--navy-900);
+    transform: translateX(2px);
+}
+
+.custom-select-option.is-selected {
+    background: linear-gradient(135deg, var(--navy-700), var(--navy-900));
+    color: #ffffff;
+    box-shadow: 0 10px 18px rgba(23, 57, 109, 0.16);
+}
+
 .swap {
-    width: clamp(40px, 9vw, 52px);
-    height: clamp(40px, 9vw, 52px);
+    width: clamp(42px, 8vw, 56px);
+    height: clamp(42px, 8vw, 56px);
     display: grid;
     place-items: center;
     border-radius: 50%;
@@ -458,6 +601,12 @@ select:focus {
 
     .select-card {
         border-radius: 18px;
+    }
+
+    .custom-select-menu {
+        min-width: max(100%, 260px);
+        max-width: calc(100vw - 24px);
+        max-height: min(240px, 36vh);
     }
 
     .token-one {

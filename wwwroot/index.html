@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Currency Converter</title>
-    <link rel="stylesheet" href="/style.css?v=20260428-blue-motion">
+    <link rel="stylesheet" href="/style.css?v=20260429-blue-dropdown-swap">
 </head>
 <body>
 
@@ -34,23 +34,49 @@
 
             <div class="select-group">
                 <div class="select-card">
-                    <label for="from">From</label>
-                    <select id="from"></select>
+                    <label for="from-trigger">From</label>
+                    <div class="custom-select" data-select-id="from">
+                        <button
+                            type="button"
+                            id="from-trigger"
+                            class="custom-select-trigger"
+                            aria-haspopup="listbox"
+                            aria-expanded="false"
+                        >
+                            <span class="custom-select-value">Select currency</span>
+                            <span class="custom-select-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="custom-select-menu" role="listbox"></div>
+                    </div>
+                    <select id="from" class="native-select" aria-hidden="true" tabindex="-1"></select>
                 </div>
 
                 <button
                     type="button"
                     class="swap"
-                    onclick="convert()"
-                    aria-label="Convert currency"
-                    title="Convert currency"
+                    onclick="swapCurrencies()"
+                    aria-label="Swap currencies"
+                    title="Swap currencies"
                 >
                     &#8646;
                 </button>
 
                 <div class="select-card">
-                    <label for="to">To</label>
-                    <select id="to"></select>
+                    <label for="to-trigger">To</label>
+                    <div class="custom-select" data-select-id="to">
+                        <button
+                            type="button"
+                            id="to-trigger"
+                            class="custom-select-trigger"
+                            aria-haspopup="listbox"
+                            aria-expanded="false"
+                        >
+                            <span class="custom-select-value">Select currency</span>
+                            <span class="custom-select-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="custom-select-menu" role="listbox"></div>
+                    </div>
+                    <select id="to" class="native-select" aria-hidden="true" tabindex="-1"></select>
                 </div>
             </div>
 
@@ -68,6 +94,7 @@
 
 <script>
 const apiBase = "/api/currency";
+const customSelects = Array.from(document.querySelectorAll(".custom-select"));
 
 async function fetchJson(url) {
     const response = await fetch(url);
@@ -80,14 +107,175 @@ async function fetchJson(url) {
     return response.json();
 }
 
+function formatCurrencyLabel(code, name) {
+    return `${name} (${code})`;
+}
+
+function getCustomSelectFor(select) {
+    return document.querySelector(`.custom-select[data-select-id="${select.id}"]`);
+}
+
+function closeCustomSelect(customSelect) {
+    if (!customSelect) {
+        return;
+    }
+
+    customSelect.classList.remove("is-open");
+    customSelect.querySelector(".custom-select-trigger").setAttribute("aria-expanded", "false");
+}
+
+function closeCustomSelects(except = null) {
+    customSelects.forEach((customSelect) => {
+        if (customSelect !== except) {
+            closeCustomSelect(customSelect);
+        }
+    });
+}
+
+function updateCustomSelect(customSelect, select) {
+    if (!customSelect) {
+        return;
+    }
+
+    const selectedOption = select.options[select.selectedIndex];
+    const valueElement = customSelect.querySelector(".custom-select-value");
+    const optionButtons = customSelect.querySelectorAll(".custom-select-option");
+
+    valueElement.textContent = selectedOption ? selectedOption.textContent : "Select currency";
+
+    optionButtons.forEach((button) => {
+        const isSelected = button.dataset.value === select.value;
+        button.classList.toggle("is-selected", isSelected);
+        button.setAttribute("aria-selected", String(isSelected));
+    });
+}
+
+function setSelectValue(select, value) {
+    select.value = value;
+    updateCustomSelect(getCustomSelectFor(select), select);
+}
+
+function swapCurrencies() {
+    const from = document.getElementById("from");
+    const to = document.getElementById("to");
+    const amount = document.getElementById("amount").value;
+    const fromValue = from.value;
+    const toValue = to.value;
+
+    if (!fromValue || !toValue) {
+        return;
+    }
+
+    setSelectValue(from, toValue);
+    setSelectValue(to, fromValue);
+    closeCustomSelects();
+
+    if (amount && Number(amount) > 0) {
+        convert();
+    }
+}
+
+function focusOption(customSelect, direction = 0) {
+    const options = Array.from(customSelect.querySelectorAll(".custom-select-option"));
+
+    if (!options.length) {
+        return;
+    }
+
+    const selected = customSelect.querySelector(".custom-select-option.is-selected");
+    const active = document.activeElement;
+    const currentIndex = options.indexOf(active);
+    let nextIndex = currentIndex;
+
+    if (currentIndex === -1) {
+        nextIndex = selected ? options.indexOf(selected) : 0;
+    } else {
+        nextIndex = (currentIndex + direction + options.length) % options.length;
+    }
+
+    options[nextIndex].focus();
+}
+
+function openCustomSelect(customSelect) {
+    closeCustomSelects(customSelect);
+    customSelect.classList.add("is-open");
+    customSelect.querySelector(".custom-select-trigger").setAttribute("aria-expanded", "true");
+    focusOption(customSelect);
+}
+
 function populateCurrencySelect(select, currencies) {
+    const customSelect = getCustomSelectFor(select);
+    const menu = customSelect.querySelector(".custom-select-menu");
+
     select.innerHTML = "";
+    menu.innerHTML = "";
 
     currencies.forEach(({ code, name }) => {
         const option = document.createElement("option");
         option.value = code;
-        option.textContent = `${name} (${code})`;
+        option.textContent = formatCurrencyLabel(code, name);
         select.appendChild(option);
+
+        const optionButton = document.createElement("button");
+        optionButton.type = "button";
+        optionButton.className = "custom-select-option";
+        optionButton.dataset.value = code;
+        optionButton.setAttribute("role", "option");
+        optionButton.textContent = formatCurrencyLabel(code, name);
+        optionButton.addEventListener("click", () => {
+            setSelectValue(select, code);
+            closeCustomSelect(customSelect);
+            customSelect.querySelector(".custom-select-trigger").focus();
+        });
+        menu.appendChild(optionButton);
+    });
+
+    updateCustomSelect(customSelect, select);
+}
+
+function initializeCustomSelect(customSelect) {
+    const select = document.getElementById(customSelect.dataset.selectId);
+    const trigger = customSelect.querySelector(".custom-select-trigger");
+    const menu = customSelect.querySelector(".custom-select-menu");
+
+    trigger.addEventListener("click", (event) => {
+        event.stopPropagation();
+
+        if (customSelect.classList.contains("is-open")) {
+            closeCustomSelect(customSelect);
+            return;
+        }
+
+        openCustomSelect(customSelect);
+    });
+
+    trigger.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openCustomSelect(customSelect);
+        }
+    });
+
+    menu.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            focusOption(customSelect, 1);
+        }
+
+        if (event.key === "ArrowUp") {
+            event.preventDefault();
+            focusOption(customSelect, -1);
+        }
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+            closeCustomSelect(customSelect);
+            trigger.focus();
+        }
+    });
+
+    select.addEventListener("change", () => {
+        updateCustomSelect(customSelect, select);
     });
 }
 
@@ -102,8 +290,8 @@ async function loadCurrencies() {
         populateCurrencySelect(from, currencies);
         populateCurrencySelect(to, currencies);
 
-        from.value = "USD";
-        to.value = "PHP";
+        setSelectValue(from, "USD");
+        setSelectValue(to, "PHP");
     } catch (error) {
         result.innerText = error.message;
     }
@@ -134,6 +322,18 @@ async function convert() {
         result.innerText = error.message;
     }
 }
+
+customSelects.forEach(initializeCustomSelect);
+
+document.addEventListener("click", () => {
+    closeCustomSelects();
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        closeCustomSelects();
+    }
+});
 
 loadCurrencies();
 </script>
